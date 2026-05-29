@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zenzex - Premium Cyber Financial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #030a08;
+            --surface: rgba(10, 25, 20, 0.6);
+            --surface-card: rgba(16, 38, 30, 0.45);
+            --border: rgba(56, 255, 179, 0.15);
+            --primary: #38ffb3;
+            --secondary: #00e5ff;
+            --text: #f0fff9;
+            --muted: #8fa89e;
+            --danger: #ff4a6b;
+            --glow: 0 0 20px rgba(56, 255, 179, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(56, 255, 179, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(0, 229, 255, 0.05) 0%, transparent 40%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 40px;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            filter: blur(140px);
+            opacity: 0.12;
+            z-index: -1;
+            border-radius: 50%;
+        }
+        .glow-1 { top: -50px; left: -50px; }
+        .glow-2 { bottom: 10%; right: -50px; }
+
+        /* Loading Screen Fix */
+        .loader-container {
+            position: fixed;
+            inset: 0;
+            background: #030a08;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease, vertical-align 0.3s;
+        }
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(56, 255, 179, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            box-shadow: var(--glow);
+        }
+        .loader-container p {
+            margin-top: 20px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(12, 32, 25, 0.9);
+            border: 1px solid var(--primary);
+            box-shadow: var(--glow);
+            padding: 14px 28px;
+            border-radius: 14px;
+            z-index: 9999;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            text-align: center;
+        }
+        .notification.active { transform: translateX(-50%) translateY(0); }
+
+        /* Auth Screen */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+        }
+        .auth-subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Form Controls */
+        .fg { margin-bottom: 20px; }
+        .fg label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .input-ctrl {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            color: white;
+            outline: none;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .input-ctrl:focus {
+            border-color: var(--primary);
+            background: rgba(56, 255, 179, 0.02);
+            box-shadow: 0 0 15px rgba(56, 255, 179, 0.1);
+        }
+        .pwd-row {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-toggle-pwd {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--muted);
+            padding: 0 15px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 14px;
+            color: #030a08;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(56, 255, 179, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(56, 255, 179, 0.35);
+        }
+
+        /* Dashboard Screen */
+        .dashboard-container {
+            display: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .header-panel h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-panel p {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+        .actions-top {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-mini {
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-mini:hover {
+            border-color: var(--primary);
+            background: rgba(56, 255, 179, 0.05);
+        }
+        .btn-logout {
+            border-color: rgba(255, 74, 107, 0.3);
+            color: var(--danger);
+        }
+        .btn-logout:hover {
+            background: rgba(255, 74, 107, 0.1);
+            border-color: var(--danger);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        @media(min-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        .stat-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .stat-card h3 {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .amt {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .amt.up { color: var(--primary); }
+        .amt.down { color: var(--danger); }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            margin: 30px 0 15px;
+            color: var(--primary);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 2px;
+            box-shadow: var(--glow);
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 22px;
+            backdrop-filter: blur(10px);
+        }
+
+        .inputs-split {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        @media(min-width: 500px) {
+            .inputs-split { grid-template-columns: repeat(2, 1fr); }
+            .full-width-field { grid-column: span 2; }
+        }
+
+        .table-container { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        th {
+            color: var(--muted);
+            font-weight: 600;
+            background: rgba(0,0,0,0.1);
+        }
+        tr:hover td { background: rgba(56, 255, 179, 0.02); }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media(min-width: 768px) {
+            .charts-row { grid-template-columns: repeat(2, 1fr); }
+        }
+        .chart-box {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        .timeline-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .timeline-node {
+            padding: 14px;
+            background: rgba(255,255,255,0.02);
+            border-left: 3px solid var(--secondary);
+            border-radius: 0 12px 12px 0;
+            font-size: 0.85rem;
+        }
+        .timeline-node small {
+            color: var(--muted);
+            display: block;
+            margin-top: 4px;
+        }
+        .ai-text {
+            font-style: italic;
+            color: #bbf7d0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div class="loader-container" id="loadingScreen">
+        <div class="spinner"></div>
+        <p>SECURE CONNECTING...</p>
+    </div>
+
+    <div class="notification" id="notif">Notification Message</div>
+
+    <!-- PANEL LOGIN -->
+    <div class="auth-container" id="authView">
+        <div class="auth-card">
+            <div class="brand-title">ZENZEX</div>
+            <div class="auth-subtitle">Financial Core Login</div>
+            
+            <div class="fg">
+                <label>System Identity User</label>
+                <input type="text" id="userInput" class="input-ctrl" placeholder="Username (Zenzex)" autocomplete="off">
+            </div>
+            <div class="fg">
+                <label>Secure Key Password</label>
+                <div class="pwd-row">
+                    <input type="password" id="pwdInput" class="input-ctrl" placeholder="••••••••">
+                    <button type="button" class="btn-toggle-pwd" onclick="togglePass()">Show</button>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="handleAuth()">Authorize Connection</button>
+        </div>
+    </div>
+
+    <!-- PANEL CORE DASHBOARD -->
+    <div class="dashboard-container" id="dashboardView">
+        <div class="header-panel">
+            <div>
+                <h1>ZENZEX DASHBOARD</h1>
+                <p>Cyber Financial Management Architecture</p>
+            </div>
+            <div class="actions-top">
+                <button class="btn-mini" onclick="downloadInvoice()">Invoice</button>
+                <button class="btn-mini btn-logout" onclick="handleLogout()">Terminated Session</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Daily Income</h3>
+                <div class="amt up" id="incStat">Rp 0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Daily Expense</h3>
+                <div class="amt down" id="expStat">Rp 0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Net Growth</h3>
+                <div class="amt" id="netStat">Rp 0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Inventory</h3>
+                <div class="amt" id="stockStat">0 Unit</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Data Ingestion Center</h2>
+        <div class="panel">
+            <div class="inputs-split">
+                <input type="text" id="pName" class="input-ctrl" placeholder="Product Name">
+                <input type="text" id="pCat" class="input-ctrl" placeholder="Product Category">
+                <input type="number" id="pPrice" class="input-ctrl" placeholder="Selling Price (Rp)">
+                <input type="number" id="pBuy" class="input-ctrl" placeholder="Buying Price (Rp)">
+                <input type="number" id="pStock" class="input-ctrl" placeholder="Available Stock">
+                <input type="number" id="dInc" class="input-ctrl" placeholder="Calculated Income (Rp)">
+                <input type="number" id="dExp" class="input-ctrl" placeholder="Calculated Expense (Rp)">
+                <input type="text" id="pSupplier" class="input-ctrl" placeholder="Supplier Vendor">
+                <input type="text" id="pPayment" class="input-ctrl" placeholder="Payment Gateway">
+                <textarea id="pNote" class="input-ctrl full-width-field" placeholder="Core System Transaction Log Note..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="submitData()">Commit Dataset to Core</button>
+        </div>
+
+        <h2 class="section-title">Realtime Ledger Matrix</h2>
+        <div class="panel table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product Item</th>
+                        <th>Classification</th>
+                        <th>Market Price</th>
+                        <th>Stock Available</th>
+                        <th>Generated Profit</th>
+                        <th>System Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ledgerTable"></tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title">Visual Analytics Stream</h2>
+        <div class="charts-row">
+            <div class="panel"><div class="chart-box"><canvas id="lineChartModel"></canvas></div></div>
+            <div class="panel"><div class="chart-box"><canvas id="doughnutChartModel"></canvas></div></div>
+        </div>
+
+        <div class="inputs-split" style="margin-top: 25px;">
+            <div>
+                <h2 class="section-title">AI Cognitive Neural Insight</h2>
+                <div class="panel"><p class="ai-text" id="aiOutput">Engine Analysis: Ready. Feed financial metrics datasets.</p></div>
+            </div>
+            <div>
+                <h2 class="section-title">System Activity Log</h2>
+                <div class="panel timeline-box" id="activityTimeline"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_USER = 'Zenzex';
+        const AUTH_PASS = 'Zenzex2';
+
+        let dataStore = JSON.parse(localStorage.getItem('zz_store')) || [];
+        let logsStore = JSON.parse(localStorage.getItem('zz_logs')) || [];
+        let activeLineChart = null;
+        let activeDoughnutChart = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loadingScreen');
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 500);
+                }
+                if (sessionStorage.getItem('zz_authorized') === 'true') {
+                    openSystemDashboard();
+                }
+            }, 1500);
+        });
+
+        function togglePass() {
+            const el = document.getElementById('pwdInput');
+            el.type = el.type === 'password' ? 'text' : 'password';
+        }
+
+        function handleAuth() {
+            const u = document.getElementById('userInput').value;
+            const p = document.getElementById('pwdInput').value;
+
+            if (u === AUTH_USER && p === AUTH_PASS) {
+                sessionStorage.setItem('zz_authorized', 'true');
+                triggerNotification('Access Granted. Decrypting Financial Node...');
+                setTimeout(() => { openSystemDashboard(); }, 800);
+            } else {
+                triggerNotification('Invalid Security Identity Credentials!');
+            }
+        }
+
+        function openSystemDashboard() {
+            document.getElementById('authView').style.display = 'none';
+            document.getElementById('dashboardView').style.display = 'block';
+            refreshAnalytics();
+            initCharts();
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('zz_authorized');
+            triggerNotification('Session terminated safely.');
+            setTimeout(() => { location.reload(); }, 600);
+        }
+
+        function triggerNotification(msg) {
+            const box = document.getElementById('notif');
+            box.innerText = msg;
+            box.classList.add('active');
+            setTimeout(() => box.classList.remove('active'), 3000);
+        }
+
+        function submitData() {
+            const name = document.getElementById('pName').value;
+            const price = Number(document.getElementById('pPrice').value);
+            const buy = Number(document.getElementById('pBuy').value);
+            const stock = Number(document.getElementById('pStock').value);
+            const inc = Number(document.getElementById('dInc').value);
+            const exp = Number(document.getElementById('dExp').value);
+
+            if(!name || !price) {
+                triggerNotification('Product Name and Selling Price required!');
+                return;
+            }
+
+            const payload = {
+                id: 'TX-' + Da
